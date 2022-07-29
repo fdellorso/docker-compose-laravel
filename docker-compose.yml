@@ -13,7 +13,7 @@ services:
         - GID=${GID:-1000}
     container_name: nginx
     ports:
-      - 80:80
+      - 8000:8000
     volumes:
       - ./src:/var/www/html:delegated
     depends_on:
@@ -24,13 +24,31 @@ services:
     networks:
       - laravel
 
+  # nginx:
+  #   image: nginx:stable-alpine
+  #   container_name: nginx
+  #   ports:
+  #     - "8080:80"
+  #   volumes:
+  #     - ./src:/var/www/html
+  #     - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+  #   depends_on:
+  #     - php
+  #     # - redis
+  #     - mysql
+  #     # - mailhog
+  #   networks:
+  #     - laravel
+
   mysql:
-    image: mariadb:10.6
+    image: mysql:5.7
     container_name: mysql
     restart: unless-stopped
     tty: true
     ports:
-      - 3306:3306
+      - "3306:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
     environment:
       MYSQL_DATABASE: homestead
       MYSQL_USER: homestead
@@ -54,15 +72,6 @@ services:
     networks:
       - laravel
 
-  redis:
-    image: redis:alpine
-    container_name: redis
-    restart: unless-stopped
-    ports:
-      - 6379:6379
-    networks:
-      - laravel
-
   composer:
     build:
       context: ./dockerfiles
@@ -74,25 +83,23 @@ services:
     volumes:
       - ./src:/var/www/html
     working_dir: /var/www/html
-    depends_on:
-      - php
+    # depends_on:
+    #   - php
     user: laravel
-    entrypoint: ['composer', '--ignore-platform-reqs']
+    entrypoint: ['composer']
     networks:
       - laravel
 
-  npm:
-    image: node:13.7
-    container_name: npm
-    volumes:
-      - ./src:/var/www/html
-    ports:
-      - 3000:3000
-      - 3001:3001
-    working_dir: /var/www/html
-    entrypoint: ['npm']
-    networks:
-      - laravel
+  # composer:
+  #   image: composer:latest
+  #   container_name: composer
+  #   volumes:
+  #     - ./src:/var/www/html
+  #   working_dir: /var/www/html
+  #   depends_on:
+  #     - php
+  #   networks:
+  #     - laravel
 
   artisan:
     build:
@@ -119,3 +126,25 @@ services:
       - 8025:8025
     networks:
       - laravel
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    networks:
+      - laravel
+
+  # npm:
+  #   image: node:lts-alpine
+  #   container_name: npm
+  #   volumes:
+  #     - ./src:/var/www/html
+  #   ports:
+  #     - 3000:3000
+  #     - 3001:3001
+  #   working_dir: /var/www/html
+  #   entrypoint: ['npm']
+  #   networks:
+  #     - laravel
